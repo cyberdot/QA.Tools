@@ -72,12 +72,9 @@ namespace QA.Tools.Postgres
 
         public string FormatConnUrl(PostgresConfig config)
         {
-            return format("jdbc:postgresql://%s:%s/%s?user=%s&password=%s", 
-                config.net().host(),
-                config.net().port(),
-                config.storage().dbName(),
-                config.credentials().username(),
-                config.credentials().password();
+            return $"Server={config.Host};Port={config.Port};" +
+                   $"Database={config.DatabaseName};User Id={config.Username};" +
+                   $"Password={config.Password};";
         }
 
 
