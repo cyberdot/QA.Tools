@@ -43,7 +43,7 @@ namespace QA.Tools.Postgres
             return Start(DefaultRuntimeConfig(), host, port, dbName, user, password, DefaultParams);
         }
 
-        public string Start(string host, int port, string dbName, string user, string password, List<string> additionalParams)
+        public string Start(string host, int port, string dbName, string user, string password, IReadOnlyCollection<string> additionalParams)
         {
             return Start(DefaultRuntimeConfig(), host, port, dbName, user, password, additionalParams);
         }
@@ -53,20 +53,22 @@ namespace QA.Tools.Postgres
             return Start(runtimeConfig, DefaultHost, FindFreePort(), DefaultDbName, DefaultUser, DefaultPassword, DefaultParams);
         }
 
-        public string Start(IRuntimeConfig runtimeConfig, string host, int port, string dbName, string user, string password,
-            List<string> additionalParams)
+        public string Start(IRuntimeConfig runtimeConfig, 
+            string host, int port, string dbName, 
+            string user, string password,
+            IReadOnlyCollection<string> additionalParams)
         {
-           PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
-                    var config = new PostgresConfig(version,
-        new AbstractPostgresConfig.Net(host, port),
-        new AbstractPostgresConfig.Storage(dbName, dataDir),
-        new AbstractPostgresConfig.Timeout(),
-        new AbstractPostgresConfig.Credentials(user, password)
-        );
-        config.getAdditionalInitDbParams().addAll(additionalParams);
-        PostgresExecutable exec = runtime.prepare(config);
-            this.process = exec.start();
-        return FormatConnUrl(config);
+//           PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
+//                    var config = new PostgresConfig(version,
+//        new AbstractPostgresConfig.Net(host, port),
+//        new AbstractPostgresConfig.Storage(dbName, dataDir),
+//        new AbstractPostgresConfig.Timeout(),
+//        new AbstractPostgresConfig.Credentials(user, password)
+//        );
+//        config.getAdditionalInitDbParams().addAll(additionalParams);
+//        PostgresExecutable exec = runtime.prepare(config);
+//            this.process = exec.start();
+//        return FormatConnUrl(config);
     }
 
 
