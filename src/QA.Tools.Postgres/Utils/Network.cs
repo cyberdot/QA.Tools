@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace QA.Tools.Postgres
+namespace QA.Tools.Postgres.Utils
 {
     public class Network
     {

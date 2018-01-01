@@ -1,15 +1,22 @@
-﻿namespace QA.Tools.Postgres
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace QA.Tools.Postgres
 {
-    public enum Versions
+    public static class Versions
     {
-        v9_0, 
-        v9_1,
-        v9_2,
-        v9_3,
-        v9_4,
-        v9_5,
-        v9_6,
-        v_10,
-        Production
+        private static readonly List<Version> VersionsInternal = new List<Version>
+        {
+            new Version("9.1"),
+            new Version("9.2"),
+            new Version("9.3"),
+            new Version("9.4"),
+            new Version("10.0", isProduction: true)
+        };
+
+
+        public static Version Get(string version) => VersionsInternal.SingleOrDefault(v => v.SemVersion == version);
+        public static Version Production => VersionsInternal.SingleOrDefault(v => v.IsProduction);
+        public static int Count => VersionsInternal.Count;
     }
 }

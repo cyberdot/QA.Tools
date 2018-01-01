@@ -1,84 +1,77 @@
 ﻿using System.Collections.Generic;
-using static QA.Tools.Postgres.Network;
+using QA.Tools.Postgres.Config;
+using static QA.Tools.Postgres.Utils.Network;
 
 namespace QA.Tools.Postgres
 {
     public class EmbeddedPostgres
     {
-        private readonly Versions version;
+        private readonly Distribution distribution;
         private readonly string dataDir;
-
-        public const string DefaultUser = "postgres";
-        public const string DefaultPassword = "postgres";
-        public const string DefaultDbName = "postgres";
-        public const string DefaultHost = "localhost";
-        private static readonly IReadOnlyCollection<string> DefaultParams = new List<string> {
-            "-E", "SQL_ASCII",
-            "--locale=C",
-            "--lc-collate=C",
-            "--lc-ctype=C"};
+        private static readonly IConfig DefaultConfig = new DefaultPostgresConfig();
+        private static readonly IRuntimeConfig DefaultRuntimeConfig = new DefaultRuntimeConfig();
 
         public EmbeddedPostgres() : this(Versions.Production) { }
 
-        public EmbeddedPostgres(Versions version) : this(version, null) { }
+        public EmbeddedPostgres(Version version, string dataDir = null) : this(new Distribution(version), dataDir) {}
 
-        public EmbeddedPostgres(Versions version, string dataDir)
+        public EmbeddedPostgres(Distribution dist, string dataDir = null)
         {
-            this.version = version;
+            distribution = dist;
             this.dataDir = dataDir;
         }
 
         public string Start()
         {
-            return Start(DefaultHost, FindFreePort(), DefaultDbName);
+            return Start(DefaultConfig.Host, FindFreePort(), DefaultConfig.DatabaseName);
         }
 
         public string Start(string host, int port, string dbName)
         {
-            return Start(host, port, dbName, DefaultUser, DefaultPassword, DefaultParams);
+            return Start(host, port, dbName,
+                DefaultConfig.Username, DefaultConfig.Password, 
+                DefaultConfig.AdditionalParams);
         }
 
         public string Start(string host, int port, string dbName, string user, string password)
         {
-            return Start(DefaultRuntimeConfig(), host, port, dbName, user, password, DefaultParams);
+            return Start(DefaultRuntimeConfig, host, port, 
+                dbName, user, password, DefaultConfig
+                .AdditionalParams);
         }
 
-        public string Start(string host, int port, string dbName, string user, string password, IReadOnlyCollection<string> additionalParams)
+        public string Start(string host, int port, string dbName, 
+            string user, string password, IReadOnlyCollection<string> additionalParams)
         {
-            return Start(DefaultRuntimeConfig(), host, port, dbName, user, password, additionalParams);
+            return Start(DefaultRuntimeConfig, host, port, 
+                dbName, user, password, 
+                additionalParams);
         }
 
         public string Start(IRuntimeConfig runtimeConfig)
         {
-            return Start(runtimeConfig, DefaultHost, FindFreePort(), DefaultDbName, DefaultUser, DefaultPassword, DefaultParams);
+            return Start(runtimeConfig, DefaultConfig.Host, 
+                FindFreePort(), 
+                DefaultConfig.DatabaseName, 
+                DefaultConfig.Username, DefaultConfig.Password, 
+                DefaultConfig.AdditionalParams);
         }
 
-        public string Start(IRuntimeConfig runtimeConfig, 
-            string host, int port, string dbName, 
+        public string Start(IRuntimeConfig runtimeConfig,
+            string host, int port, string dbName,
             string user, string password,
             IReadOnlyCollection<string> additionalParams)
         {
-//           PostgresStarter<PostgresExecutable, PostgresProcess> runtime = PostgresStarter.getInstance(runtimeConfig);
-//                    var config = new PostgresConfig(version,
-//        new AbstractPostgresConfig.Net(host, port),
-//        new AbstractPostgresConfig.Storage(dbName, dataDir),
-//        new AbstractPostgresConfig.Timeout(),
-//        new AbstractPostgresConfig.Credentials(user, password)
-//        );
-//        config.getAdditionalInitDbParams().addAll(additionalParams);
-//        PostgresExecutable exec = runtime.prepare(config);
-//            this.process = exec.start();
-//        return FormatConnUrl(config);
-    }
+            var config = new PostgresConfig(distribution,
+                host, port,
+                dbName, dataDir,
+                user, password, additionalParams);
 
+            var process = new PostgresProcess(runtimeConfig, config);
+            process.Start();
 
-        public string FormatConnUrl(PostgresConfig config)
-        {
-            return $"Server={config.Host};Port={config.Port};" +
-                   $"Database={config.DatabaseName};User Id={config.Username};" +
-                   $"Password={config.Password};";
+            return config.ToConnectionString();
         }
 
-
-}
+    }
 }

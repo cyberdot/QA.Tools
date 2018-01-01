@@ -1,4 +1,4 @@
-﻿namespace QA.Tools.Postgres
+﻿namespace QA.Tools.Postgres.Store
 {
     public interface IArtifactStore
     {

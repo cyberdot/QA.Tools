@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace QA.Tools.Postgres
+namespace QA.Tools.Postgres.Store
 {
     public class ExtractedFileSet
     {
