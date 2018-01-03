@@ -14,11 +14,8 @@ namespace QA.Tools.Postgres
             BitSize = arch;
         }
 
-
         public Version Version { get; }
-
         public OSPlatform Platform { get; }
-
         public Architecture BitSize { get; }
     }
 }
