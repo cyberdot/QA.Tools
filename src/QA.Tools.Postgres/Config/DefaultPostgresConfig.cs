@@ -17,7 +17,7 @@ namespace QA.Tools.Postgres.Config
 
         public Distribution Distribution => Dist;
         public string Host => DefaultHost;
-        public int Port => 123;
+        public int Port => 5432;
         public string DatabaseName => DefaultDbName;
         public string DataDir => "";
         public string Username => DefaultUser;

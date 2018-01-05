@@ -3,7 +3,7 @@ using System.IO;
 
 namespace QA.Tools.Postgres.Config
 {
-    public class DefaultArtifactConfig : IArtifactConfig
+    public class DefaultArtifactConfig : IArtifactStoreConfig
     {
         private const string ArtifactStoreRoot = ".embedpostgresql";
         private const string DPrefix = "postgresql-download";

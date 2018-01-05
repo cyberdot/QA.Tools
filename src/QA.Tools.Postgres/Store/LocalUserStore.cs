@@ -5,24 +5,33 @@ namespace QA.Tools.Postgres.Store
 {
     public class LocalUserStore : IArtifactStore
     {
-        private readonly IArtifactConfig config;
+        private readonly IArtifactStoreConfig config;
 
-        public LocalUserStore(IArtifactConfig config)
+        public LocalUserStore(IArtifactStoreConfig config)
         {
             this.config = config;
         }
 
         public bool CheckDistribution(Distribution distribution)
         {
-            if (!config.ArtifactStorePath.Exists)
+            var artifactStorePath = config.ArtifactStorePath;
+            var packageResolver = config.PackageResolver;
+
+            if (!artifactStorePath.Exists)
             {
-                config.ArtifactStorePath.Create();
+                artifactStorePath.Create();
             }
 
-            //check if distro exists already
-            //if not download and extract it
-            //return true
+            var distroPath = new DirectoryInfo(Path.Combine(artifactStorePath.FullName,
+                distribution.Version.SemVersion, distribution.BitSize.ToString()));
 
+            if (distroPath.Exists)
+            {
+                distroPath.Delete(true);
+                distroPath.Create();
+            }
+            
+            packageResolver.Setup(distribution, distroPath);
             return true;
         }
 

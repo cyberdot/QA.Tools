@@ -3,7 +3,7 @@ using System.IO;
 
 namespace QA.Tools.Postgres.Config
 {
-    public interface IArtifactConfig
+    public interface IArtifactStoreConfig
     {
         Uri DownloadPath { get; }
 
