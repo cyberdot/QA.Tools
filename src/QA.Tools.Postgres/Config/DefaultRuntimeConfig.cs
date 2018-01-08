@@ -1,4 +1,6 @@
-﻿using QA.Tools.Postgres.Store;
+﻿using System.Collections.Generic;
+using QA.Tools.Postgres.Commands;
+using QA.Tools.Postgres.Store;
 
 namespace QA.Tools.Postgres.Config
 {
@@ -6,11 +8,11 @@ namespace QA.Tools.Postgres.Config
     {
         public DefaultRuntimeConfig()
         {
-            ArtifactStore = new LocalUserStore(new DefaultArtifactConfig());
-            IsDaemonProcess = false;
+            ArtifactStore = new LocalUserStore(new DefaultStoreConfig());
+            Commands = new List<ICommand> { new InitDbCommand(), new StartServerCommand() };
         }
 
         public IArtifactStore ArtifactStore { get; }
-        public bool IsDaemonProcess { get; }
+        public IEnumerable<ICommand> Commands { get; }
     }
 }

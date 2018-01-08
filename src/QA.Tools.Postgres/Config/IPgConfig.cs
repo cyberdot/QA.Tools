@@ -2,10 +2,9 @@ using System.Collections.Generic;
 
 namespace QA.Tools.Postgres.Config
 {
-    public interface IConfig
+    public interface IPgConfig
     {
-        Distribution Distribution { get; }
-        string Host { get; }
+        Distribution.Distribution Distribution { get; }
         int Port { get; }
         string DatabaseName { get; }
         string DataDir { get; }

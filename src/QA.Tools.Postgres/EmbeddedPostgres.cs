@@ -1,77 +1,86 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using QA.Tools.Postgres.Commands;
 using QA.Tools.Postgres.Config;
+using QA.Tools.Postgres.Distribution;
+using QA.Tools.Postgres.Process;
 using static QA.Tools.Postgres.Utils.Network;
+using Version = QA.Tools.Postgres.Distribution.Version;
 
 namespace QA.Tools.Postgres
 {
-    public class EmbeddedPostgres
+    public class EmbeddedPostgres : IDisposable
     {
-        private readonly Distribution distribution;
-        private readonly string dataDir;
-        private static readonly IConfig DefaultConfig = new DefaultPostgresConfig();
+        private readonly IPgConfig config;
         private static readonly IRuntimeConfig DefaultRuntimeConfig = new DefaultRuntimeConfig();
+        private PostgresProcess process;
 
         public EmbeddedPostgres() : this(Versions.Production) { }
-
-        public EmbeddedPostgres(Version version, string dataDir = null) : this(new Distribution(version), dataDir) {}
-
-        public EmbeddedPostgres(Distribution dist, string dataDir = null)
+        public EmbeddedPostgres(Version version, string dataDir = null) : this(new Distribution.Distribution(version), dataDir) {}
+        public EmbeddedPostgres(Distribution.Distribution dist, string dataDir = null)
         {
-            distribution = dist;
-            this.dataDir = dataDir;
+            config = new DefaultPgConfig(dist, dataDir);
         }
 
         public string Start()
         {
-            return Start(DefaultConfig.Host, FindFreePort(), DefaultConfig.DatabaseName);
+            return Start(FindFreePort(), config.DatabaseName);
         }
-
-        public string Start(string host, int port, string dbName)
+        public string Start(int port, string dbName)
         {
-            return Start(host, port, dbName,
-                DefaultConfig.Username, DefaultConfig.Password, 
-                DefaultConfig.AdditionalParams);
+            return Start(port, dbName,
+                config.Username, config.Password, 
+                config.AdditionalParams);
         }
-
-        public string Start(string host, int port, string dbName, string user, string password)
+        public string Start(int port, string dbName, string user, string password)
         {
-            return Start(DefaultRuntimeConfig, host, port, 
-                dbName, user, password, DefaultConfig
+            return Start(DefaultRuntimeConfig, port, 
+                dbName, user, password, config
                 .AdditionalParams);
         }
-
-        public string Start(string host, int port, string dbName, 
+        public string Start(int port, string dbName, 
             string user, string password, IReadOnlyCollection<string> additionalParams)
         {
-            return Start(DefaultRuntimeConfig, host, port, 
+            return Start(DefaultRuntimeConfig, port, 
                 dbName, user, password, 
                 additionalParams);
         }
-
         public string Start(IRuntimeConfig runtimeConfig)
         {
-            return Start(runtimeConfig, DefaultConfig.Host, 
+            return Start(runtimeConfig,  
                 FindFreePort(), 
-                DefaultConfig.DatabaseName, 
-                DefaultConfig.Username, DefaultConfig.Password, 
-                DefaultConfig.AdditionalParams);
+                config.DatabaseName, 
+                config.Username, config.Password, 
+                config.AdditionalParams);
         }
-
         public string Start(IRuntimeConfig runtimeConfig,
-            string host, int port, string dbName,
+            int port, string dbName,
             string user, string password,
             IReadOnlyCollection<string> additionalParams)
         {
-            var config = new PostgresConfig(distribution,
-                host, port,
-                dbName, dataDir,
+            var newConfig = new PostgresConfig(config.Distribution,
+                port,
+                dbName, config.DataDir,
                 user, password, additionalParams);
 
-            var process = new PostgresProcess(runtimeConfig, config);
-            process.Start();
+            process = new PostgresProcess(newConfig, runtimeConfig);
+            process.Start().Wait();
 
-            return config.ToConnectionString();
+            return newConfig.ToConnectionString();
         }
 
+        public void Stop()
+        {
+            if (process != null)
+            {
+                var path = process.DistributionPackage.FileSet.Executable.FullName;
+                var stopCmd = new StopServerCommand();
+                stopCmd.Run(path, config.DataDir, config.AdditionalParams);
+
+                process.Stop();
+            }
+        }
+
+        public void Dispose() { Stop(); }
     }
 }

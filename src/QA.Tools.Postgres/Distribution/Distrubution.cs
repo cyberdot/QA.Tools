@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using QA.Tools.Postgres.Utils;
 
-namespace QA.Tools.Postgres
+namespace QA.Tools.Postgres.Distribution
 {
     public class Distribution
     {

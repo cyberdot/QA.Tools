@@ -2,10 +2,9 @@
 
 namespace QA.Tools.Postgres.Config
 {
-    public class PostgresConfig : IConfig
+    public class PostgresConfig : IPgConfig
     {
-        public Distribution Distribution { get; }
-        public string Host { get; }
+        public Distribution.Distribution Distribution { get; }
         public int Port { get; }
         public string DatabaseName { get; }
         public string DataDir { get; }
@@ -14,14 +13,13 @@ namespace QA.Tools.Postgres.Config
         public IReadOnlyCollection<string> AdditionalParams { get; }
 
         public PostgresConfig(
-            Distribution distribution, 
-            string host, int port, 
+            Distribution.Distribution distribution, 
+            int port, 
             string dbName, string dataDir, 
             string user, string password, 
             IReadOnlyCollection<string> additionalParams)
         {
             Distribution = distribution;
-            Host = host;
             Port = port;
             DatabaseName = dbName;
             DataDir = dataDir;
@@ -32,7 +30,7 @@ namespace QA.Tools.Postgres.Config
 
         public string ToConnectionString()
         {
-            return $"Server={Host};Port={Port};" +
+            return $"Server=localhost;Port={Port};" +
                    $"Database={DatabaseName};User Id={Username};" +
                    $"Password={Password};";
         }

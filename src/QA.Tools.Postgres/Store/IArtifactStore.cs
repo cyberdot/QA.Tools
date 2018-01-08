@@ -1,11 +1,10 @@
-﻿namespace QA.Tools.Postgres.Store
+﻿using System.Threading.Tasks;
+using QA.Tools.Postgres.Distribution;
+
+namespace QA.Tools.Postgres.Store
 {
     public interface IArtifactStore
     {
-        bool CheckDistribution(Distribution distribution);
-
-        ExtractedFileSet ExtractFileSet(Distribution distribution);
-
-        void RemoveFileSet(Distribution distribution, ExtractedFileSet files);
+        Task<DistributionPackage> GetDistributionPackage(Distribution.Distribution distribution);
     }
 }

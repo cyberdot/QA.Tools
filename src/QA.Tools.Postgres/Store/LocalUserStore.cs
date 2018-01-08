@@ -1,48 +1,47 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 using QA.Tools.Postgres.Config;
+using QA.Tools.Postgres.Distribution;
 
 namespace QA.Tools.Postgres.Store
 {
     public class LocalUserStore : IArtifactStore
     {
-        private readonly IArtifactStoreConfig config;
+        private readonly IStoreConfig config;
+        private readonly DirectoryInfo storePath;
 
-        public LocalUserStore(IArtifactStoreConfig config)
+        public LocalUserStore(IStoreConfig config)
         {
             this.config = config;
+            storePath = this.config.ArtifactStorePath;
         }
 
-        public bool CheckDistribution(Distribution distribution)
+        public async Task<DistributionPackage> GetDistributionPackage(Distribution.Distribution distribution)
         {
-            var artifactStorePath = config.ArtifactStorePath;
+            var artifactStorePath = storePath;
             var packageResolver = config.PackageResolver;
 
             if (!artifactStorePath.Exists)
             {
                 artifactStorePath.Create();
+                artifactStorePath.CreateSubdirectory(config.PackagesCache);
+                artifactStorePath.CreateSubdirectory(config.DistributionsRoot);
             }
 
-            var distroPath = new DirectoryInfo(Path.Combine(artifactStorePath.FullName,
-                distribution.Version.SemVersion, distribution.BitSize.ToString()));
-
-            if (distroPath.Exists)
-            {
-                distroPath.Delete(true);
-                distroPath.Create();
-            }
-            
-            packageResolver.Setup(distribution, distroPath);
-            return true;
+            var distroPath = GenerateDistroPath(distribution);
+            return await packageResolver.Setup(distribution, distroPath)
+                .ConfigureAwait(false);
         }
 
-        public ExtractedFileSet ExtractFileSet(Distribution distribution)
+        private DirectoryInfo GenerateDistroPath(Distribution.Distribution distribution)
         {
-            throw new System.NotImplementedException();
-        }
+            var newDistroDirectory = $"{Guid.NewGuid()}-{distribution.Version}-{distribution.BitSize.ToString()}"
+                .ToLowerInvariant();
 
-        public void RemoveFileSet(Distribution distribution, ExtractedFileSet files)
-        {
-            throw new System.NotImplementedException();
+            var path = new DirectoryInfo(Path.Combine(storePath.FullName, config.DistributionsRoot, newDistroDirectory));
+            if (!path.Exists) { path.Create(); }
+            return path;
         }
     }
 }

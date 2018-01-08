@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace QA.Tools.Postgres
+namespace QA.Tools.Postgres.Distribution
 {
     public static class Versions
     {

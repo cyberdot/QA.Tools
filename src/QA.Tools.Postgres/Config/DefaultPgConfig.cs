@@ -1,32 +1,44 @@
 ﻿using System.Collections.Generic;
+using QA.Tools.Postgres.Distribution;
+using QA.Tools.Postgres.Utils;
 
 namespace QA.Tools.Postgres.Config
 {
-    public class DefaultPostgresConfig : IConfig
+    public class DefaultPgConfig : IPgConfig
     {
         private const string DefaultUser = "postgres";
         private const string DefaultPassword = "postgres";
         private const string DefaultDbName = "postgres";
-        private const string DefaultHost = "localhost";
-        private static readonly Distribution Dist = new Distribution(Versions.Production);
+        private const string DefaultDataDir = "data";
+
         private static readonly IReadOnlyCollection<string> DefaultParams = new List<string> {
             "-E", "SQL_ASCII",
             "--locale=C",
             "--lc-collate=C",
             "--lc-ctype=C"};
 
-        public Distribution Distribution => Dist;
-        public string Host => DefaultHost;
-        public int Port => 5432;
+        public DefaultPgConfig() { }
+
+        public DefaultPgConfig(Distribution.Distribution distribution, string dataDir)
+        {
+            Distribution = distribution;
+            if (!string.IsNullOrWhiteSpace(dataDir))
+            {
+                DataDir = dataDir;
+            }
+        }
+
+        public Distribution.Distribution Distribution { get; } = new Distribution.Distribution(Versions.Production);
+        public int Port { get; } = Network.FindFreePort();
         public string DatabaseName => DefaultDbName;
-        public string DataDir => "";
+        public string DataDir { get; } = DefaultDataDir;
         public string Username => DefaultUser;
         public string Password => DefaultPassword;
         public IReadOnlyCollection<string> AdditionalParams => DefaultParams;
 
         public string ToConnectionString()
         {
-            return $"Server={Host};Port={Port};" +
+            return $"Server=localhost;Port={Port};" +
                    $"Database={DatabaseName};User Id={Username};" +
                    $"Password={Password};";
         }
