@@ -18,7 +18,7 @@ namespace QA.Tools.Postgres.Resolver
             this.config = config;
         }
 
-        public async Task<DistributionPackage> GetPackageAsync(Distribution.Distribution distribution)
+        public DistributionPackage GetPackage(Distribution.Distribution distribution)
         {
             var distroPath = GetFileName(distribution);
             if (File.Exists(distroPath))
@@ -26,23 +26,27 @@ namespace QA.Tools.Postgres.Resolver
                 return new DistributionPackage(distroPath);
             }
 
-            return await DownloadPackageAsync(distribution);
+            return DownloadPackageAsync(distribution);
         }
 
-        private async Task<DistributionPackage> DownloadPackageAsync(Distribution.Distribution distribution)
+        private DistributionPackage DownloadPackageAsync(Distribution.Distribution distribution)
         {
             var distroPath = GetFileName(distribution);
             var distroDownloadUrl = GenerateUrl(distribution);
 
             var client = new HttpClient { BaseAddress = config.DownloadUri };
             client.DefaultRequestHeaders.Add("User-Agent", config.UserAgent);
-            var response = await client.GetAsync(distroDownloadUrl, HttpCompletionOption.ResponseContentRead);
+            var response = client.GetAsync(distroDownloadUrl, HttpCompletionOption.ResponseContentRead)
+                .ConfigureAwait(false).GetAwaiter().GetResult();
 
             if(!response.IsSuccessStatusCode) throw new ArgumentException("The specified distribution cannot be downloaded");
 
-            using (var stream = await response.Content.ReadAsStreamAsync())
+            using (var stream = response.Content.ReadAsStreamAsync().ConfigureAwait(false).GetAwaiter().GetResult())
             {
-                await stream.CopyToAsync(File.Create(distroPath));
+                stream.CopyToAsync(File.Create(distroPath))
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             }
             return new DistributionPackage(distroPath);
         }

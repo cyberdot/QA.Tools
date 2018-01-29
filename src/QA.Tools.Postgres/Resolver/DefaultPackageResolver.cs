@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Threading.Tasks;
 using QA.Tools.Postgres.Distribution;
 
 namespace QA.Tools.Postgres.Resolver
@@ -13,14 +12,10 @@ namespace QA.Tools.Postgres.Resolver
             this.downloader = downloader;
         }
 
-        public async Task<DistributionPackage> Setup(Distribution.Distribution distribution, DirectoryInfo distroPath)
+        public DistributionPackage Setup(Distribution.Distribution distribution, DirectoryInfo distroPath)
         {
-            var package = await downloader
-                .GetPackageAsync(distribution)
-                .ConfigureAwait(false);
-
+            var package = downloader.GetPackage(distribution);
             package.CopyTo(distroPath);
-            package.ExtractFileSet(distroPath);
 
             distroPath.Refresh();
             return package;

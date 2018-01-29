@@ -64,7 +64,7 @@ namespace QA.Tools.Postgres
                 user, password, additionalParams);
 
             process = new PostgresProcess(newConfig, runtimeConfig);
-            process.Start().Wait();
+            process.Start();
 
             return newConfig.ToConnectionString();
         }
@@ -73,9 +73,8 @@ namespace QA.Tools.Postgres
         {
             if (process != null)
             {
-                var path = process.DistributionPackage.FileSet.Executable.FullName;
                 var stopCmd = new StopServerCommand();
-                stopCmd.Run(path, config.DataDir, config.AdditionalParams);
+                stopCmd.Run(process.DistributionPackage.BinTools, config.DataDir, config.AdditionalParams);
 
                 process.Stop();
             }

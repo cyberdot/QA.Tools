@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using QA.Tools.Postgres.Commands;
 using QA.Tools.Postgres.Config;
 using QA.Tools.Postgres.Distribution;
-using QA.Tools.Postgres.Store;
 
 namespace QA.Tools.Postgres.Process
 {
@@ -22,23 +22,22 @@ namespace QA.Tools.Postgres.Process
 
         public DistributionPackage DistributionPackage { get; private set; }
 
-        public async Task Start()
+        public void Start()
         {
             var store = runtimeConfig.ArtifactStore;
             var distribution = config.Distribution;
 
-            DistributionPackage = await store.GetDistributionPackage(distribution)
-                .ConfigureAwait(false);
-            if (DistributionPackage?.FileSet != null)
+            DistributionPackage = store.GetDistributionPackage(distribution);
+            if (DistributionPackage?.BinTools != null)
             {
-                ExecuteCommands(DistributionPackage.FileSet);
+                ExecuteCommands();
             }
         }
 
-        private void ExecuteCommands(ExtractedFileSet fileSet)
+        private void ExecuteCommands()
         {
-            var exePath = fileSet.Executable.FullName;
-            var dataDir = Path.Combine(fileSet.Executable.Directory.Parent.FullName, config.DataDir);
+            var binTools = DistributionPackage.BinTools;
+            var dataDir = Path.Combine(DistributionPackage.InstallationPath.FullName, config.DataDir);
 
             var initOpts = config.AdditionalParams.Union(new List<string>
             {
@@ -54,7 +53,24 @@ namespace QA.Tools.Postgres.Process
             foreach (var cmd in runtimeConfig.Commands)
             {
                 var opts = cmd is InitDbCommand ? initOpts : startOpts;
-                cmd.Run(exePath, dataDir, opts);
+                cmd.Run(binTools, dataDir, opts);
+            }
+
+            var checkReadiness = new IsDbReadyCommand();
+            var isReadyOpts = new List<string>
+            {
+                "-p", config.Port.ToString(),
+                "-U", config.Username
+            };
+            for (var i = 0; i < 3; i++)
+            {
+                var status = checkReadiness.Run(binTools, config.DataDir, isReadyOpts);
+                if (status) return;
+
+                Task.Delay(TimeSpan.FromMilliseconds(500))
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             }
         }
 

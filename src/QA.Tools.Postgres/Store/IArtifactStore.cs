@@ -1,10 +1,9 @@
-﻿using System.Threading.Tasks;
-using QA.Tools.Postgres.Distribution;
+﻿using QA.Tools.Postgres.Distribution;
 
 namespace QA.Tools.Postgres.Store
 {
     public interface IArtifactStore
     {
-        Task<DistributionPackage> GetDistributionPackage(Distribution.Distribution distribution);
+        DistributionPackage GetDistributionPackage(Distribution.Distribution distribution);
     }
 }

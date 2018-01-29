@@ -11,11 +11,7 @@ namespace QA.Tools.Postgres.Config
         private const string DefaultDbName = "postgres";
         private const string DefaultDataDir = "data";
 
-        private static readonly IReadOnlyCollection<string> DefaultParams = new List<string> {
-            "-E", "SQL_ASCII",
-            "--locale=C",
-            "--lc-collate=C",
-            "--lc-ctype=C"};
+        private static readonly IReadOnlyCollection<string> DefaultParams = new List<string> { "-E", "UTF8"};
 
         public DefaultPgConfig() { }
 

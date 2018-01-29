@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 using QA.Tools.Postgres.Config;
 using QA.Tools.Postgres.Distribution;
 
@@ -17,7 +16,7 @@ namespace QA.Tools.Postgres.Store
             storePath = this.config.ArtifactStorePath;
         }
 
-        public async Task<DistributionPackage> GetDistributionPackage(Distribution.Distribution distribution)
+        public DistributionPackage GetDistributionPackage(Distribution.Distribution distribution)
         {
             var artifactStorePath = storePath;
             var packageResolver = config.PackageResolver;
@@ -30,8 +29,7 @@ namespace QA.Tools.Postgres.Store
             }
 
             var distroPath = GenerateDistroPath(distribution);
-            return await packageResolver.Setup(distribution, distroPath)
-                .ConfigureAwait(false);
+            return packageResolver.Setup(distribution, distroPath);
         }
 
         private DirectoryInfo GenerateDistroPath(Distribution.Distribution distribution)
